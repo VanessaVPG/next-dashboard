@@ -32,15 +32,24 @@ export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
+  let responseRedirectUrl = null;
   try {
-    await signIn('credentials', Object.fromEntries(formData));
+    console.log('formData', formData);
+    responseRedirectUrl = await signIn('credentials', {
+      ...Object.fromEntries(formData),
+      redirect: false,
+    });
   } catch (error) {
+    console.log('error', error);
     if ((error as Error).message.includes('CredentialsSignin')) {
       return 'CredentialSignin';
     }
     throw error;
+  } finally {
+    if (responseRedirectUrl) redirect(responseRedirectUrl);
   }
 }
+
 const CreateInvoice = InvoiceSchema.omit({ id: true, date: true });
 export async function createInvoice(prevState: State, formData: FormData) {
   const validatedFields = CreateInvoice.safeParse({
